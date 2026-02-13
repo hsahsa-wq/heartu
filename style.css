@@ -1,26 +1,31 @@
 :root {
-    --bg-color: #ffe6e6; /* Soft pink background */
-    --envelope-color: #ff3366;
-    --envelope-flap: #ff5c85;
-    --envelope-shadow: rgba(0,0,0,0.2);
-    --heart-color: #e6004c;
+    --bg-gradient: radial-gradient(circle at center, #fff0f5 0%, #ffe4e1 100%);
+    --envelope-color: #ff1493;
+    --envelope-dark: #c71585;
+    --envelope-flap: #ff69b4;
     --letter-bg: #fffbf0;
-    --text-color: #55001b;
+    --text-color: #4a0e1e;
+    --shadow-color: rgba(0, 0, 0, 0.2);
+    --rainbow-1: #ff595e;
+    --rainbow-2: #ffca3a;
+    --rainbow-3: #8ac926;
+    --rainbow-4: #1982c4;
+    --rainbow-5: #6a4c93;
 }
 
 body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background: radial-gradient(circle, #ffe6e6 0%, #ffccd5 100%);
+    background: var(--bg-gradient);
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'Pacifico', cursive;
+    font-family: 'Times New Roman', serif;
+    perspective: 1000px;
 }
 
-/* --- Falling Hearts Background --- */
 #hearts-container {
     position: absolute;
     top: 0;
@@ -28,80 +33,57 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1;
+    z-index: 0;
 }
 
 .falling-heart {
     position: absolute;
     top: -50px;
-    color: var(--heart-color);
-    font-size: 24px;
+    font-size: 20px;
     opacity: 0.8;
+    filter: drop-shadow(0 0 5px rgba(255, 182, 193, 0.5));
     animation: fall linear forwards;
 }
 
 @keyframes fall {
     to {
-        transform: translateY(110vh) rotate(360deg);
+        transform: translateY(110vh) rotate(720deg);
     }
 }
 
-/* --- Envelope Wrapper --- */
-.envelope-wrapper {
-    position: relative;
-    z-index: 10;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.envelope-wrapper:hover {
-    transform: scale(1.05);
-}
-
-.envelope-wrapper:hover .click-instruction {
-    opacity: 1;
-}
-
-.click-instruction {
-    position: absolute;
-    bottom: -60px;
-    width: 100%;
-    text-align: center;
-    color: var(--text-color);
-    font-size: 1.2rem;
-    opacity: 0.7;
-    transition: opacity 0.3s;
-    pointer-events: none;
-}
-
-/* --- The Envelope --- */
-.envelope {
+.scene {
     position: relative;
     width: 300px;
     height: 200px;
-    background-color: var(--envelope-color);
-    box-shadow: 0 10px 20px var(--envelope-shadow);
-    border-radius: 0 0 10px 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
-/* The flap (triangle top) */
-.envelope .flap {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-left: 150px solid transparent;
-    border-right: 150px solid transparent;
-    border-top: 110px solid var(--envelope-flap); /* Slightly lighter color for depth */
-    transform-origin: top;
-    transition: transform 0.6s 0.4s ease-in-out, z-index 0.2s 0.4s; /* Delay z-index swap */
-    z-index: 3;
-    border-radius: 10px 10px 0 0;
+.envelope-wrapper {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    cursor: pointer;
+    transition: transform 0.5s ease;
 }
 
-/* The pocket (triangle bottom) */
-.envelope .pocket {
+.envelope-wrapper:hover {
+    transform: scale(1.02);
+}
+
+.envelope {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--envelope-color);
+    box-shadow: 0 20px 40px var(--shadow-color);
+    border-radius: 5px;
+    z-index: 5;
+}
+
+.pocket {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -110,170 +92,184 @@ body {
     border-left: 150px solid var(--envelope-color);
     border-right: 150px solid var(--envelope-color);
     border-top: 100px solid transparent;
-    border-bottom: 200px solid transparent; /* Visual trick for pocket shape */
-    /* Wait, the standard "pocket" look usually is just borders or a clipped div. 
-       Let's simplify: solid block for back, this is the front cover. */
-    border: none; 
-    
-    /* Re-doing pocket to look right: two triangles on sides + bottom trapezoid? 
-       Easier: CSS border trick. */
-    border-left: 150px solid var(--envelope-flap);
-    border-right: 150px solid var(--envelope-flap);
-    border-bottom: 110px solid var(--envelope-color);
-    border-top: 90px solid transparent;
-    
-    /* Resetting to correct border logic for a single element pocket overlay */
-    border-radius: 0 0 10px 10px;
-    z-index: 2;
+    border-bottom: 100px solid var(--envelope-dark);
+    z-index: 10;
+    border-radius: 0 0 5px 5px;
 }
 
-/* Correction for Pocket/Front appearance */
-.front {
+.flap-container {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 2; /* In front of letter initially */
-    pointer-events: none; /* Let clicks pass to envelope container */
+    height: 100px;
+    z-index: 11;
+    transform-origin: top;
+    transition: transform 0.6s ease-in-out 0.2s, z-index 0.2s 0.2s;
 }
 
-.front .pocket {
-    /* Create the 'V' shape of the envelope front */
-    position: absolute;
-    bottom: 0;
-    left: 0;
+.envelope-wrapper:not(.open) .flap-container {
+    transition: transform 0.6s ease-in-out 0.4s, z-index 0.2s 0.4s;
+}
+
+.envelope-wrapper.open .flap-container {
+    transition: transform 0.6s ease-in-out 0s, z-index 0.2s 0.2s;
+}
+
+.flap {
     width: 0;
     height: 0;
     border-left: 150px solid transparent;
     border-right: 150px solid transparent;
-    border-bottom: 120px solid #ff4d73; /* Slightly distinct shade */
-    z-index: 3;
-    border-radius: 0 0 10px 10px;
-    /* Actually, we need side flaps too. */
-}
-/* Re-thinking the pure CSS envelope for specific visual style. 
-   Let's use ::before/::after on .front to make side flaps vs bottom flap. 
-*/
-.envelope .front::before {
-    /* Left flap */
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-top: 100px solid transparent; /* slight angle */
-    border-bottom: 100px solid transparent;
-    border-left: 180px solid #ff426e; 
-    z-index: 2;
-    border-radius: 5px;
+    border-top: 110px solid var(--envelope-flap);
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
 }
 
-.envelope .front::after {
-    /* Right flap */
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-top: 100px solid transparent; 
-    border-bottom: 100px solid transparent;
-    border-right: 180px solid #ff426e;
-    z-index: 2;
-    border-radius: 5px;
-}
-/* Bottom flap (the pocket) */
-.envelope .front .pocket {
-    /* Overriding previous pocket styles */
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 0;
-    border-left: 150px solid transparent;
-    border-right: 150px solid transparent;
-    border-bottom: 130px solid #ff3366; /* Main color */
-    border-top: none;
-    z-index: 3; 
-}
-
-
-/* --- The Letter --- */
 .letter {
     position: absolute;
-    top: 10px; /* Hidden inside */
-    left: 15px;
-    width: 270px;
-    height: 180px;
-    background-color: var(--letter-bg);
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    top: auto;
+
+    width: 90%;
+    height: 90%;
+    background: var(--letter-bg);
     border-radius: 5px;
+    z-index: 4;
+
+    transition: width 0.6s ease-in-out, height 0.6s ease-in-out, top 0.6s ease-in-out, transform 0.6s ease-in-out, z-index 0.1s;
+
     padding: 20px;
     box-sizing: border-box;
-    transition: transform 0.6s ease-in-out, opacity 0.5s;
-    z-index: 1; /* Behind front flaps */
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    text-align: center;
-    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
 }
 
-.letter .text {
-    font-family: 'Dancing Script', cursive;
-    color: var(--text-color);
+.letter::-webkit-scrollbar {
+    display: none;
+}
+
+.letter-content {
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    width: 100%;
 }
 
 .letter h1 {
-    font-size: 1.5rem;
-    margin: 0 0 10px 0;
+    font-family: 'Great Vibes', cursive;
+    margin: 10px 0;
+    color: #800020;
+    font-size: 2rem;
 }
 
 .letter p {
+    font-family: 'Cormorant Garamond', serif;
     font-size: 1.1rem;
-    line-height: 1.4;
+    line-height: 1.5;
+    color: var(--text-color);
     margin: 0;
 }
 
-/* --- Heart Seal --- */
-.heart-seal {
+.signature {
+    font-family: 'Great Vibes', cursive;
+    margin-top: 15px;
+    font-size: 1.6rem;
+    display: block;
+}
+
+.wax-seal {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 50px;
-    color: #e60000;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 10;
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(circle at 30% 30%, #e60000, #990000);
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid #b30000;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.3s, opacity 0.3s;
 }
 
-.envelope:hover .heart-seal {
+.wax-seal:hover {
     transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* --- OPEN STATE ANIMATIONS --- */
+.heart-icon {
+    font-size: 24px;
+    color: #ffcccc;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
 
-/* 1. Flap opens */
-.envelope.open .flap {
+.instruction-text {
+    position: absolute;
+    bottom: -60px;
+    width: 100%;
+    text-align: center;
+    color: rgba(74, 14, 30, 0.6);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    pointer-events: none;
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
+    animation-delay: 1s;
+    transition: opacity 0.5s;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* --- OPEN STATES --- */
+
+.envelope-wrapper.open .flap-container {
     transform: rotateX(180deg);
-    z-index: 1; /* Moves behind the letter after opening */
-    transition-delay: 0s;
+    z-index: 1;
 }
 
-/* 2. Letter slides up */
-.envelope.open .letter {
-    transform: translateY(-100px); /* Moves up out of envelope */
-    z-index: 4; /* Comes in front of everything */
-    height: 300px; /* Expands to show more text if needed? Or just slides up? Let's keep size but slide up high. */
-    transition: transform 0.6s 0.6s ease-in-out, height 0.6s 0.6s, z-index 0s 0.6s;
-}
-
-.envelope.open .heart-seal {
+.envelope-wrapper.open .wax-seal {
+    transform: translate(-50%, -50%) scale(1.5);
     opacity: 0;
     pointer-events: none;
+}
+
+.envelope-wrapper.open .letter {
+    z-index: 20;
+    width: 350px;
+    height: 400px;
+
+    /* Strict Centering */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    bottom: auto;
+
+    background: #fffbf0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+    transition: width 0.6s ease-in-out 0.4s, height 0.6s ease-in-out 0.4s, top 0.6s ease-in-out 0.4s, transform 0.6s ease-in-out 0.4s;
+}
+
+.envelope-wrapper.open .letter-content {
+    opacity: 1;
+    transition-delay: 1s;
+}
+
+.envelope-wrapper.open .instruction-text {
+    opacity: 0;
 }
